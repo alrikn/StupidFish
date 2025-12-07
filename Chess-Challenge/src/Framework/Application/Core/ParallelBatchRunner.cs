@@ -137,7 +137,7 @@ namespace ChessChallenge.Application
 
             var stopwatch = Stopwatch.StartNew();
 
-            void PrintProgress()
+            void PrintProgress(Stopwatch watch)
             {
                 var elapsed = stopwatch.Elapsed;
                 var completed = stats.GamesCompleted;
@@ -148,6 +148,7 @@ namespace ChessChallenge.Application
                 Console.WriteLine(
                     $"Progress: {completed}/{totalGames} ({(completed * 100.0 / totalGames):F1}%) | " +
                     $"Rate: {rate:F1} games/sec | " +
+                    $"Time spent on game: {watch.Elapsed:mm\\:ss} | " +
                     $"Elapsed: {elapsed:mm\\:ss} | " +
                     $"ETA: {TimeSpan.FromSeconds(eta):mm\\:ss} | " +
                     $"{botAName} {stats.BotAWins}-{stats.BotALosses}-{stats.BotADraws}"
@@ -172,10 +173,12 @@ namespace ChessChallenge.Application
                     await semaphore.WaitAsync();
                     try
                     {
+                        var watch = Stopwatch.StartNew();
                         var runner = new HeadlessGameRunner(botA, botB);
                         var result = runner.RunGame(fen, gameIndex, botAPlaysWhite: true);
                         stats.RecordResult(result);
-                        PrintProgress();
+                        PrintProgress(watch);
+                        watch.Stop();
                     }
                     finally
                     {
@@ -189,10 +192,12 @@ namespace ChessChallenge.Application
                     await semaphore.WaitAsync();
                     try
                     {
+                        var watch = Stopwatch.StartNew();
                         var runner = new HeadlessGameRunner(botA, botB);
                         var result = runner.RunGame(fen, gameIndex + 1, botAPlaysWhite: false);
                         stats.RecordResult(result);
-                        PrintProgress();
+                        PrintProgress(watch);
+                        watch.Stop();
                     }
                     finally
                     {
