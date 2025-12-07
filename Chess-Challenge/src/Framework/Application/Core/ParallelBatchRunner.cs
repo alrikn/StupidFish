@@ -229,6 +229,7 @@ namespace ChessChallenge.Application
         {
             // Take only the first N/2 FENs (since we play each twice)
             var fensToUse = startingFens.Take(numGames / 2).ToArray();
+            Console.WriteLine($"changing the number of games to a * of 2: {numGames}");
             var tempRunner = new ParallelBatchRunner(fensToUse, maxParallelGames);
             return await tempRunner.RunAllGamesAsync(botA, botB, botAName, botBName);
         }
