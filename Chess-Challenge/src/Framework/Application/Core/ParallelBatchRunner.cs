@@ -123,8 +123,9 @@ namespace ChessChallenge.Application
 
         /// <summary>
         /// Run all games in parallel with progress reporting
+        /// Accepts factory functions to create fresh bot instances per game to avoid shared-state.
         /// </summary>
-        public async Task<BatchStats> RunAllGamesAsync(IChessBot botA, IChessBot botB, string botAName = "Bot A", string botBName = "Bot B")
+        public async Task<BatchStats> RunAllGamesAsync(Func<IChessBot> createBotA, Func<IChessBot> createBotB, string botAName = "Bot A", string botBName = "Bot B")
         {
             var stats = new BatchStats();
             var totalGames = startingFens.Length * 2; // Each FEN played twice (swap colors)
@@ -174,7 +175,12 @@ namespace ChessChallenge.Application
                     try
                     {
                         var watch = Stopwatch.StartNew();
-                        var runner = new HeadlessGameRunner(botA, botB);
+
+                        // Create fresh bot instances for this game
+                        var botAInstance = createBotA();
+                        var botBInstance = createBotB();
+
+                        var runner = new HeadlessGameRunner(botAInstance, botBInstance);
                         var result = runner.RunGame(fen, gameIndex, botAPlaysWhite: true);
                         stats.RecordResult(result);
                         PrintProgress(watch);
@@ -193,7 +199,12 @@ namespace ChessChallenge.Application
                     try
                     {
                         var watch = Stopwatch.StartNew();
-                        var runner = new HeadlessGameRunner(botA, botB);
+
+                        // Create fresh bot instances for this game
+                        var botAInstance = createBotA();
+                        var botBInstance = createBotB();
+
+                        var runner = new HeadlessGameRunner(botAInstance, botBInstance);
                         var result = runner.RunGame(fen, gameIndex + 1, botAPlaysWhite: false);
                         stats.RecordResult(result);
                         PrintProgress(watch);
@@ -225,12 +236,12 @@ namespace ChessChallenge.Application
         /// <summary>
         /// Run specific number of games in parallel (for testing with 200 games)
         /// </summary>
-        public async Task<BatchStats> RunNGamesAsync(int numGames, IChessBot botA, IChessBot botB, string botAName = "Bot A", string botBName = "Bot B")
+        public async Task<BatchStats> RunNGamesAsync(int numGames, Func<IChessBot> createBotA, Func<IChessBot> createBotB, string botAName = "Bot A", string botBName = "Bot B")
         {
             // Take only the first N/2 FENs (since we play each twice)
             var fensToUse = startingFens.Take(numGames / 2).ToArray();
             var tempRunner = new ParallelBatchRunner(fensToUse, maxParallelGames);
-            return await tempRunner.RunAllGamesAsync(botA, botB, botAName, botBName);
+            return await tempRunner.RunAllGamesAsync(createBotA, createBotB, botAName, botBName);
         }
     }
 }

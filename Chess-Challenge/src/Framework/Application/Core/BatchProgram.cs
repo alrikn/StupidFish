@@ -48,9 +48,9 @@ namespace ChessChallenge.Application
 
             Console.WriteLine($"Loaded {fens.Length} starting positions");
 
-            // Create bots
-            var myBot = new MyBot();
-            var evilBot = new V7_bot();
+            // Create bots no longer needed cus we are creating new instances
+            //var myBot = new MyBot();
+            //var evilBot = new V7_bot();
 
             // Create batch runner
             var batchRunner = new ParallelBatchRunner(fens, maxParallel);
@@ -60,12 +60,13 @@ namespace ChessChallenge.Application
             if (numGames > 0)
             {
                 Console.WriteLine($"Running {numGames} games...\n");
-                stats = await batchRunner.RunNGamesAsync(numGames, myBot, evilBot, "MyBot (StupidFish)", "EvilBot");
+                // Pass factories so each game gets a fresh bot instance
+                stats = await batchRunner.RunNGamesAsync(numGames, () => new MyBot(), () => new V7_bot(), "MyBot (StupidFish)", "EvilBot");
             }
             else
             {
                 Console.WriteLine($"Running all games ({fens.Length * 2})...\n");
-                stats = await batchRunner.RunAllGamesAsync(myBot, evilBot, "MyBot (StupidFish)", "EvilBot");
+                stats = await batchRunner.RunAllGamesAsync(() => new MyBot(), () => new V7_bot(), "MyBot (StupidFish)", "EvilBot");
             }
 
             // Write results to file
