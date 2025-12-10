@@ -10,8 +10,15 @@ namespace ChessChallenge.Application
         const bool hideRaylibLogs = true;
         static Camera2D cam;
 
-        public static void Main()
+        public static void Main(string[] args)
         {
+            // Check for batch mode
+            if (args.Length > 0 && args[0] == "--batch")
+            {
+                BatchProgram.RunBatchMode(args).GetAwaiter().GetResult();
+                return;
+            }
+
             Vector2 loadedWindowSize = GetSavedWindowSize();
             int screenWidth = (int)loadedWindowSize.X;
             int screenHeight = (int)loadedWindowSize.Y;
