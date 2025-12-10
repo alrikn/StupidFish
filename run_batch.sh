@@ -13,4 +13,5 @@ echo "Using: $($DOTNET --version)"
 echo ""
 
 cd "$(dirname "$0")/Chess-Challenge"
+$DOTNET build
 $DOTNET run -c CI -- --batch --games=$GAMES --parallel=$PARALLEL
